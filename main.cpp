@@ -69,10 +69,36 @@ int main()
 	//normalize(tuihuaimage, tuihuaimage, 0, 1, NORM_MINMAX);
 	//imshow("tuihuaimage", tuihuaimage);
 
-	Mat complexI = fourier(tuihuaimage, M, M); // 退化图像
 	Mat complexI1 = fourier(h_e, M, M); // 点扩散函数
+	Mat complexI = fourier(tuihuaimage, M, M); // 退化图像
 
-	divide(complexI, complexI1, complexI); // 除法 会有无穷大的情况
+	//生成频域滤波核 巴特沃斯低通滤波器 （注：不使用滤波器效果更佳）
+	Mat butter_sharpen(tuihuaimage.size(), CV_32FC2); // 32位浮点型双通道
+	double D0 = 50.0;
+	int n = 4;
+	for (int i = 0; i < butter_sharpen.rows; i++) {
+		float* q = butter_sharpen.ptr<float>(i);
+		for (int j = 0; j < butter_sharpen.cols; j++) 
+		{
+			double d = sqrt(pow(i - M / 2, 2) + pow(j - M / 2, 2));
+			q[2 * j] = 1.0 / (1 + pow(D0 / d, 2 * n));
+			q[2 * j + 1] = 1.0 / (1 + pow(D0 / d, 2 * n));
+		}
+	}
+
+	multiply(complexI1, butter_sharpen, complexI1); // 计算两个数组的每元素缩放乘积。
+
+	for (int i = 0; i < M; i++)
+	{
+		for (int j = 0; j < M; j++)
+		{
+			if (complexI1.at<float>(i, j) == 0) { complexI1.at<float>(i, j) = 1e-3; }
+			complexI1.at<float>(i, j) = complexI1.at<float>(i, j) * M * M;
+		}
+	}
+
+	divide(complexI, complexI1, complexI); // 除法 会有无穷大的情况 ，怎样解决这样的事情？？
+
 
 	idfft(complexI, image, M, M, "复原");
 
