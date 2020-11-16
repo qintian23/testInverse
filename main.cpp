@@ -177,7 +177,7 @@ Mat fourier(Mat padded, int oph, int opw)
 	zero_to_center(temp[0]);
 	zero_to_center(temp[1]);
 	Mat aa;
-	magnitude(temp[0], temp[1], aa); // 计算计算二维矢量的幅值。dst(I)=sqrt(x(I)^2+y(I)^2)
+	magnitude(temp[0], temp[1], aa); // 计算计算二维矢量的幅值 dst(I)=sqrt(x(I)^2+y(I)^2)
 	divide(aa, oph * opw, aa); // 除法
 	imshow("pu", aa);
 
